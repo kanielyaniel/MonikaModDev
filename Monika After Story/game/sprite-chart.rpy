@@ -194,6 +194,7 @@ image mas_bday_balloons = ConditionSwitch(
 init -5 python in mas_sprites:
     # specific image generation functions
     import store
+    import datetime
 
     # main art path
     MOD_ART_PATH = "mod_assets/monika/"
@@ -331,14 +332,61 @@ init -5 python in mas_sprites:
         store.persistent._mas_zoom_zoom_level = zoom_level
 
 
-    def reset_zoom():
+    def gradual_zoom(to_level, speed=0.5):
+        """
+        Zooms to the given level, but gradually
+
+        IN:
+            to_level - level to zoom to
+            speed - how many seconds to wait before doing a zoom step
+        """
+        global zoom_level
+
+        # are we already where we want to be?
+        if to_level == zoom_level:
+            return
+
+        # determine direction to increment
+        if to_level < zoom_level:
+            direction = -1
+
+        else:
+            direction = 1
+
+        # convert speed to seconds
+        step = speed
+
+        # begin the looper
+        while to_level != zoom_level:
+            store.renpy.pause(speed)
+            zoom_level += direction
+            adjust_zoom()
+#        prev_time = datetime.datetime.now()
+#        while to_level != zoom_level:
+#            if (datetime.datetime.now() - prev_time).total_seconds() >= step:
+#                zoom_level += direction
+#                adjust_zoom()
+#                prev_time = datetime.datetime.now()
+
+
+    def reset_zoom(gradual=False, speed=0.5):
         """
         Resets the zoom to the default value
         NOTE: also set sthe persistent save for zoom
+
+        IN:
+            gradual - True means to do the zoom gradually, False is instant
+                (Default: False)
+            speed - speed to do a gradual zoom.
+                (Default: 0.5)
         """
-        global zoom_level
-        zoom_level = default_zoom_level
-        adjust_zoom()
+        if gradual:
+            gradual_zoom(default_zoom_level, speed)
+
+        else:
+            global zoom_level
+            zoom_level = default_zoom_level
+            adjust_zoom()
 
 
     # tryparses for the hair and clothes
